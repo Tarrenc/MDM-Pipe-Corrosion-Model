@@ -9,15 +9,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-
-##Parameters##
 t = 14 #Wall thickness (mm)
 
-#Corrosion Rate
+#Corrosion Rate method with change in volume
 Cr1 = lambda dt_total,T1,T2: (dt_total)/(T2-T1)
 
+#Corrosion Rate method with moles of CO2
 Cr2 = lambda MC02: 3.8263 * MC02 + 0.2796
 
+#Corrosion Rate method with change in weight
 Cr3 = lambda W,rho,A,T: (87.6*(W * A))/(rho*A*T)
 
 #Depth of Corrosion
@@ -27,13 +27,45 @@ dt = lambda t,Cr,T: (0.20*t) + Cr * T
 dt1= 1
 dt2 = 1
 
-#Loss of Weight/Area
+#Loss of Weight from Data
 W = np.array([427e-6, 1.28e-3, 1.65e-3, 1.71e-3, 3.08e-3, 2.89e-3])
+#Time from the recording in years of weight loss measurement
 T = np.array([1, 3.6, 5.5, 7.7, 9.6, 1.6])
 n = np.size(T)
+#Y = Year of interest
 Y = 3
 
-def LossWeightEq(W,T,n,Y,rho,A,Yr,t,T_year):
+def LossWeightEq(W,T,n,Y,rho,A,Yr,t):
+    """
+    LossWeightEq caluclates the depth of corrosion using the corrosion rate 
+    model of loss of weight of pipe
+
+    Parameters
+    ----------
+    W : np.array
+        Array containing the loss of weight information for the pipe
+    T : np.array
+        Time of inspection in years of pipe weight loss
+    n : Float value
+        Number of values in the np.array of T
+    Y : Float value
+        Year of interest
+    rho : Float value
+        Density of pipe material
+    A : Float value
+        Cross sectional area of pipe
+    Yr : Float value
+        Time of inspection in hours
+    t : Float value
+        Thickness of the pipe
+
+
+    Returns
+    -------
+    d_corrosion : Float value
+        Change in depth of the pipe
+
+    """
     W_mean = np.mean(W)
     T_mean = np.mean(T)
 
@@ -50,17 +82,38 @@ def LossWeightEq(W,T,n,Y,rho,A,Yr,t,T_year):
     plt.plot(T,y_pred, color = 'green')
     
     CR3 = Cr3(W_pred,rho,A,Yr)
-    d_corrosion = dt(t,CR3,T_year)
+    d_corrosion = dt(t,CR3,Y)
     return d_corrosion
 
-print(LossWeightEq(W,T,n,Y,1000,0.5,200,14,1))
+print(LossWeightEq(W,T,n,Y,1000,0.5,200,14))
 
 
 
-def CorrosionMole(MC02,t,T_year):
- CR2 = (Cr2(MC02)*9.7811)+0.2203
- d_corrosion = dt(t,CR2,T_year)
- return d_corrosion
+def CorrosionMole(MC02,t,Y):
+    """
+    
+
+    Parameters
+    ----------
+    MC02 : Float type
+        Moles of CO2 present in the water of the pipe
+    t : Float type
+        Tickness of the pipe
+    Y : Float type
+        Year of inspection
+
+    Returns
+    -------
+    d_corrosion : Float value
+        Depth of corrosion of pipe
+
+    """
+    CR2 = (Cr2(MC02)*9.7811)+0.2203
+    d_corrosion = dt(t,CR2,Y)
+    return d_corrosion
+
+    
+
 
 
 # =============================================================================
