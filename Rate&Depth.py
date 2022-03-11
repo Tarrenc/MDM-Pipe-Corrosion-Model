@@ -18,7 +18,7 @@ Cr1 = lambda dt_total,T1,T2: (dt_total)/(T2-T1)
 Cr2 = lambda MC02: 3.8263 * MC02 + 0.2796
 
 #Corrosion Rate method with change in weight
-Cr3 = lambda W,rho,A,T: (87.6*(W * A))/(rho*A*T)
+Cr3 = lambda W,rho,r,Yr: (87.6* W /(rho*(np.pi * r**2)*Yr))
 
 #Depth of Corrosion
 dt = lambda t,Cr,T: (0.20*t) + Cr * T
@@ -28,12 +28,12 @@ dt1= 1
 dt2 = 1
 
 #Loss of Weight from Data
-W = np.array([427e-6, 1.28e-3, 1.65e-3, 1.71e-3, 3.08e-3, 2.89e-3])
+W = np.array([1.67e3, 5.85e3, 7.5e3, 9.19e3, 13.08e3, 13.22e3])
 #Time from the recording in years of weight loss measurement
-T = np.array([1, 3.6, 5.5, 7.7, 9.6, 1.6])
+T = np.array([1, 3.6, 5.5, 7.7, 9.6, 11.6])
 n = np.size(T)
 #Y = Year of interest
-Y = 3
+Y = 8
 
 def LossWeightEq(W,T,n,Y,rho,A,Yr,t):
     """
@@ -70,22 +70,28 @@ def LossWeightEq(W,T,n,Y,rho,A,Yr,t):
     T_mean = np.mean(T)
 
     Sxy = np.sum(W*T)-n*W_mean*T_mean
-    Sxx = np.sum(T*T)-n*W_mean*T_mean
+    Sxx = np.sum(T*T)-n*T_mean*T_mean
 
     b1 = Sxy/Sxx
     b0 = W_mean-b1*T_mean
 
     y_pred = b1 * T + b0
     W_pred = b1 * Y + b0
+    
+# =============================================================================
+#     m,c = np.polyfit(T,W,1)
+#     eq = W * m +c
+# =============================================================================
 
     plt.scatter(T,W, color = 'red')
     plt.plot(T,y_pred, color = 'green')
     
+    print()
     CR3 = Cr3(W_pred,rho,A,Yr)
     d_corrosion = dt(t,CR3,Y)
     return d_corrosion
 
-print(LossWeightEq(W,T,n,Y,1000,0.5,200,14))
+print(LossWeightEq(W,T,n,Y,8.96,3.81,70080,1))
 
 
 
@@ -113,7 +119,7 @@ def CorrosionMole(MC02,t,Y):
     return d_corrosion
 
     
-
+print(CorrosionMole(0.2,1,1))
 
 
 # =============================================================================
